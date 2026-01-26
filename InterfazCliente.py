@@ -509,7 +509,227 @@ class SocialtecCliente:
     #---------PANTALLA DE BUSQUEDA-------------
 
     def mostrar_buscar(self):
-        messagebox.showinfo("Busqueda amigos", "Implementar pantalla")
+
+        self.limpiar_ventana()
+        
+        
+        frame_top = tk.Frame(self.root, bg=self.colores['primario'], height=60)
+        frame_top.pack(fill='x')
+        
+        tk.Label(
+            frame_top,
+            text="Socialtec",
+            font=('Arial', 20, 'bold'),
+            fg=self.colores['blanco'],
+            bg=self.colores['primario']
+        ).pack(side='left', padx=20, pady=10)
+        
+        
+        btn_volver = tk.Button(
+            frame_top,
+            text="← Volver al Perfil",
+            font=('Arial', 11),
+            bg=self.colores['blanco'],
+            fg=self.colores['texto'],
+            cursor='hand2',
+            command=self.mostrar_perfil
+        )
+        btn_volver.pack(side='left', padx=10)
+        
+        
+        frame_principal = tk.Frame(self.root, bg=self.colores['fondo'])
+        frame_principal.pack(fill='both', expand=True, padx=20, pady=20)
+        
+        
+        tk.Label(
+            frame_principal,
+            text="Buscar Personas",
+            font=('Arial', 24, 'bold'),
+            bg=self.colores['fondo']
+        ).pack(pady=20)
+        
+        
+        frame_busqueda = tk.Frame(frame_principal, bg=self.colores['blanco'], padx=30, pady=20)
+        frame_busqueda.pack(fill='x')
+        
+        
+        tk.Label(
+            frame_busqueda,
+            text="Nombre:",
+            font=('Arial', 12),
+            bg=self.colores['blanco']
+        ).pack(side='left', padx=(0, 10))
+
+        
+        self.entry_buscar_nombre = tk.Entry(
+            frame_busqueda,
+            font=('Arial', 12),
+            width=20,
+            relief=tk.SOLID,
+            borderwidth=1
+        )
+        self.entry_buscar_nombre.pack(side='left', padx=(0, 20))
+        
+        
+        tk.Label(
+            frame_busqueda,
+            text="Apellido:",
+            font=('Arial', 12),
+            bg=self.colores['blanco']
+        ).pack(side='left', padx=(0, 10))
+
+        
+        self.entry_buscar_apellido = tk.Entry(
+            frame_busqueda,
+            font=('Arial', 12),
+            width=20,
+            relief=tk.SOLID,
+            borderwidth=1
+        )
+        self.entry_buscar_apellido.pack(side='left', padx=(0, 20))
+        
+        
+        btn_buscar = tk.Button(
+            frame_busqueda,
+            text="🔍 Buscar",
+            font=('Arial', 12, 'bold'),
+            bg=self.colores['primario'],
+            fg=self.colores['blanco'],
+            cursor='hand2',
+            command=self.click_buscar_persona
+        )
+        btn_buscar.pack(side='left')
+        
+        
+        frame_resultados = tk.Frame(frame_principal, bg=self.colores['blanco'])
+        frame_resultados.pack(fill='both', expand=True, pady=(20, 0))
+
+        
+        tk.Label(
+            frame_resultados,
+            text="Resultados de Búsqueda",
+            font=('Arial', 16, 'bold'),
+            bg=self.colores['blanco']
+        ).pack(pady=15)
+        
+        
+        frame_scroll = tk.Frame(frame_resultados, bg=self.colores['blanco'])
+        frame_scroll.pack(fill='both', expand=True, padx=10, pady=(0, 10))
+
+        
+        canvas_resultados = tk.Canvas(frame_scroll, bg=self.colores['blanco'])
+        scrollbar_resultados = ttk.Scrollbar(frame_scroll, orient="vertical", command=canvas_resultados.yview)
+        self.frame_lista_resultados = tk.Frame(canvas_resultados, bg=self.colores['blanco'])
+        
+
+        self.frame_lista_resultados.bind(
+            "<Configure>",
+            lambda e: canvas_resultados.configure(scrollregion=canvas_resultados.bbox("all"))
+        )
+
+        
+        canvas_resultados.create_window((0, 0), window=self.frame_lista_resultados, anchor="nw")
+        canvas_resultados.configure(yscrollcommand=scrollbar_resultados.set)
+
+        
+        canvas_resultados.pack(side="left", fill="both", expand=True)
+        scrollbar_resultados.pack(side="right", fill="y")
+
+    
+    def click_buscar_persona(self):
+        
+        nombre = self.entry_buscar_nombre.get()
+        apellido = self.entry_buscar_apellido.get()
+        
+        
+        if not nombre and not apellido:
+            messagebox.showwarning("Advertencia", "Ingrese al menos un criterio de búsqueda")
+            return
+        
+        
+        for widget in self.frame_lista_resultados.winfo_children():
+            widget.destroy()
+        
+        
+        resultados_ejemplo = [
+            {"nombre": "Juan Pérez", "es_amigo": True},
+            {"nombre": "María Pérez", "es_amigo": False},
+            {"nombre": "Pedro Pérez", "es_amigo": False}
+        ]
+        
+        
+        for resultado in resultados_ejemplo:
+            self.mostrar_resultado_busqueda(resultado)
+
+
+    def mostrar_resultado_busqueda(self, resultado):
+    
+        frame_resultado = tk.Frame(
+            self.frame_lista_resultados,
+            bg=self.colores['fondo'],
+            relief=tk.SOLID,
+            borderwidth=1
+        )
+        frame_resultado.pack(fill='x', padx=5, pady=5)
+        
+    
+        tk.Label(
+            frame_resultado,
+            text=resultado['nombre'],
+            font=('Arial', 14),
+            bg=self.colores['fondo']
+        ).pack(side='left', padx=20, pady=15)
+        
+    
+        btn_ver = tk.Button(
+            frame_resultado,
+            text="Ver Perfil",
+            font=('Arial', 10),
+            bg=self.colores['primario'],
+            fg=self.colores['blanco'],
+            cursor='hand2',
+            command=lambda: self.click_ver_perfil_busqueda(resultado)
+        )
+        btn_ver.pack(side='right', padx=5, pady=5)
+        
+    
+        if resultado['es_amigo']:
+            btn_eliminar = tk.Button(
+                frame_resultado,
+                text="Eliminar Amistad",
+                font=('Arial', 10),
+                bg='#dc3545',
+                fg=self.colores['blanco'],
+                cursor='hand2',
+                command=lambda: self.click_eliminar_amistad(resultado)
+            )
+            btn_eliminar.pack(side='right', padx=5, pady=5)
+            
+    
+            tk.Label(
+                frame_resultado,
+                text="Amigo",
+                font=('Arial', 10),
+                bg=self.colores['fondo'],
+                fg=self.colores['secundario']
+            ).pack(side='right', padx=10)
+    
+
+    def click_ver_perfil_busqueda(self, resultado):
+        messagebox.showinfo("Ver Perfil", f"Mostrando perfil de {resultado['nombre']}")
+    
+
+    def click_eliminar_amistad(self, resultado):
+        respuesta = messagebox.askyesno(
+            "Confirmar",
+            f"¿Está seguro que desea eliminar la amistad con {resultado['nombre']}?"
+        )
+        
+        #AQUI NO HAY NINGUNA LOIGICA DE AMIGOS IMPLEMENTAD AUN
+        if respuesta:
+            messagebox.showinfo("Éxito", f"Amistad con {resultado['nombre']} eliminada")
+            self.click_buscar_persona()  
+
 
 
 
