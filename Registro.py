@@ -39,19 +39,19 @@ class ManejoUsuarios:
         print("usuario logueado")
         return True, nombre, foto
 
-manejo_usuarios = ManejoUsuarios()
+# manejo_usuarios = ManejoUsuarios()
 
-# username = input("Username:")
-# nombre = input("Nombre:")
-# contra = input("Contrasenna:")
-# foto = input("Ruta_foto:")
+# # username = input("Username:")
+# # nombre = input("Nombre:")
+# # contra = input("Contrasenna:")
+# # foto = input("Ruta_foto:")
 
-# manejo_usuarios.registrar_usuario(username, nombre, contra, foto)
+# # manejo_usuarios.registrar_usuario(username, nombre, contra, foto)
 
 
 
-username_login = input("Introduzca su username:")
-contra_login = input("Introduzca su contra:")
+# username_login = input("Introduzca su username:")
+# contra_login = input("Introduzca su contra:")
 
-manejo_usuarios.login(username_login, contra_login)
+# manejo_usuarios.login(username_login, contra_login)
 
