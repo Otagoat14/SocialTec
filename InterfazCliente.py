@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 import os
 from Registro import ManejoUsuarios
 
-
+#CREO QUE HAY UN PROBLEMA CON LA LOGICA YA QUE EL SERVIDOR DEBERIA HACER TODAS LAS OPERACIONES HABRIA QUE HACERLAS EN EL SERVIDOR
 class SocialtecCliente:
     def __init__(self, root):
         self.root = root
@@ -128,6 +128,7 @@ class SocialtecCliente:
             messagebox.showwarning("Advertencia", "Por favor complete todos los campos")
             return
 
+        #ESTO TAMBIEN HAY QUE CAMBIARLO CON LA LOGICA DEL SERVIDOR
         if self.registro.login(usuario, contra):
             self.usuario_actual = usuario
             self.mostrar_perfil()
@@ -341,14 +342,177 @@ class SocialtecCliente:
             messagebox.showwarning("Advertencia", "Por favor seleccione una foto de perfil")
             return
         
-        
+        #AQUI NO SERIA REGISTRARLO DE UNA VEZ SINO MANDARLO AL ERVER Y DE AHI HACER LA VERIFICACION Y LLAMAR AL METODO
         self.registro.registrar_usuario(usuario, contra, nombre_completo, self.foto_perfil_path)
         messagebox.showinfo("Éxito", "Cuenta creada exitosamente")
         self.mostrar_login()
 
-    #PERFILES Y AMIGOS
+    
+    #---------PAGINA PERFIL---------------  
     def mostrar_perfil(self):
-        messagebox.showinfo("HOLI")
+        self.limpiar_ventana()
+        
+        
+        frame_top = tk.Frame(self.root, bg=self.colores['primario'], height=60)
+        frame_top.pack(fill='x')
+
+        
+        tk.Label(
+            frame_top,
+            text="Socialtec",
+            font=('Arial', 20, 'bold'),
+            fg=self.colores['blanco'],
+            bg=self.colores['primario']
+        ).pack(side='left', padx=20, pady=10)
+        
+
+        btn_buscar = tk.Button(
+            frame_top,
+            text="Buscar Personas",
+            font=('Arial', 11),
+            bg=self.colores['blanco'],
+            fg=self.colores['texto'],
+            cursor='hand2',
+            command=self.mostrar_buscar
+        )
+        btn_buscar.pack(side='left', padx=10)
+        
+        
+        btn_cerrar = tk.Button(
+            frame_top,
+            text="Cerrar Sesión",
+            font=('Arial', 11),
+            bg=self.colores['blanco'],
+            fg=self.colores['texto'],
+            cursor='hand2',
+            command=self.mostrar_login
+        )
+        btn_cerrar.pack(side='right', padx=20)
+        
+
+        frame_principal = tk.Frame(self.root, bg=self.colores['fondo'])
+        frame_principal.pack(fill='both', expand=True, padx=20, pady=20)
+        
+        
+        frame_perfil = tk.Frame(frame_principal, bg=self.colores['blanco'], relief=tk.SOLID, borderwidth=1)
+        frame_perfil.pack(side='left', fill='both', expand=True, padx=(0, 10))
+        
+        
+        canvas_foto = tk.Canvas(
+            frame_perfil,
+            width=150,
+            height=150,
+            bg=self.colores['gris'],
+            highlightthickness=0
+        )
+        canvas_foto.pack(pady=20)
+        canvas_foto.create_text(75, 75, text="👤", font=('Arial', 60))
+        
+        
+        tk.Label(
+            frame_perfil,
+            text=self.usuario_actual or "Usuario",
+            font=('Arial', 24, 'bold'),
+            bg=self.colores['blanco']
+        ).pack(pady=10)
+        
+        
+        tk.Label(
+            frame_perfil,
+            text="Perfil de usuario",
+            font=('Arial', 12),
+            bg=self.colores['blanco'],
+            fg=self.colores['gris']
+        ).pack(pady=5)
+        
+        
+        frame_amigos = tk.Frame(frame_principal, bg=self.colores['blanco'], relief=tk.SOLID, borderwidth=1)
+        frame_amigos.pack(side='right', fill='both', expand=True)
+        
+        
+        tk.Label(
+            frame_amigos,
+            text="Lista de Amigos",
+            font=('Arial', 18, 'bold'),
+            bg=self.colores['blanco']
+        ).pack(pady=15)
+        
+        
+        frame_scroll_amigos = tk.Frame(frame_amigos, bg=self.colores['blanco'])
+        frame_scroll_amigos.pack(fill='both', expand=True, padx=10, pady=(0, 10))
+
+        
+        canvas_amigos = tk.Canvas(frame_scroll_amigos, bg=self.colores['blanco'])
+        scrollbar_amigos = ttk.Scrollbar(frame_scroll_amigos, orient="vertical", command=canvas_amigos.yview)
+        self.frame_lista_amigos = tk.Frame(canvas_amigos, bg=self.colores['blanco'])
+
+        
+        self.frame_lista_amigos.bind(
+            "<Configure>",
+            lambda e: canvas_amigos.configure(scrollregion=canvas_amigos.bbox("all"))
+        )
+
+        
+        canvas_amigos.create_window((0, 0), window=self.frame_lista_amigos, anchor="nw")
+        canvas_amigos.configure(yscrollcommand=scrollbar_amigos.set)
+
+        
+        canvas_amigos.pack(side="left", fill="both", expand=True)
+        scrollbar_amigos.pack(side="right", fill="y")
+        
+        
+    #ESTA FUNCION SE REMPLAZARA EN BASE A LA LOGICA CON QUE SE CREEN LOS AMIGOS
+    def mostrar_lista_amigos_ejemplo(self):
+
+        amigos_ejemplo = [
+            "Ana García",
+            "Carlos Rodríguez",
+            "Elena Martínez",
+            "Juan Pérez",
+            "María López"
+        ]
+
+        
+        for amigo in amigos_ejemplo:
+            frame_amigo = tk.Frame(
+                self.frame_lista_amigos,
+                bg=self.colores['fondo'],
+                relief=tk.SOLID,
+                borderwidth=1
+            )
+            frame_amigo.pack(fill='x', padx=5, pady=5)
+            
+
+            tk.Label(
+                frame_amigo,
+                text=amigo,
+                font=('Arial', 12),
+                bg=self.colores['fondo']
+            ).pack(side='left', padx=10, pady=10)
+            
+
+            btn_ver = tk.Button(
+                frame_amigo,
+                text="Ver Perfil",
+                font=('Arial', 9),
+                bg=self.colores['primario'],
+                fg=self.colores['blanco'],
+                cursor='hand2',
+                command=lambda a=amigo: self.click_ver_perfil_amigo(a)
+            )
+            btn_ver.pack(side='right', padx=5, pady=5)
+
+    
+    def click_ver_perfil_amigo(self, nombre_amigo):
+        messagebox.showinfo("Ver Perfil", f"Mostrando perfil de {nombre_amigo}")
+
+    #---------PANTALLA DE BUSQUEDA-------------
+
+    def mostrar_buscar(self):
+        messagebox.showinfo("Busqueda amigos", "Implementar pantalla")
+
+
+
     
 
 
