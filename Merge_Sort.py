@@ -1,0 +1,48 @@
+#ESTE CODIGO TENGO QUE MODIFICARLO PARA QUE SE PUEDA HACER CON LA LISTA DE AMIGOS
+
+def merge_sort(lista):
+
+    if len(lista) > 1 :
+
+        lista_izq = lista[:len(lista)//2]
+        lista_der = lista[len(lista)//2:]
+
+        merge_sort(lista_izq)
+        merge_sort(lista_der)
+
+        i = 0 
+        k = 0 
+        j = 0
+
+        while i < len(lista_izq) and j < len(lista_der):
+            if lista_izq[i] < lista_der[j] :
+                lista[k] = lista_izq[i]
+
+                i += 1
+                
+            else:
+
+                lista[k] = lista_der[j]
+                j += 1
+
+            k += 1
+            
+
+        while i < len(lista_izq):
+            
+            lista[k] = lista_izq[i]
+            i += 1
+            k += 1
+
+        while j < len(lista_der):
+
+            lista[k] = lista_der[j]
+            j += 1
+            k += 1
+
+    return lista
+
+lista_prueba = [1, 5, 8, 4, 0, 9, 3, 4, 8, 10, 13, 54, 67, 43]
+print(merge_sort(lista_prueba))
+
+
