@@ -3,8 +3,12 @@ from tkinter import ttk, messagebox, filedialog
 from PIL import Image, ImageTk
 import os
 from Registro import ManejoUsuarios
+from Cliente_Prueba import *
 
-#CREO QUE HAY UN PROBLEMA CON LA LOGICA YA QUE EL SERVIDOR DEBERIA HACER TODAS LAS OPERACIONES HABRIA QUE HACERLAS EN EL SERVIDOR
+ip = "127.0.0.1"
+puerto = 5000
+
+
 class SocialtecCliente:
     def __init__(self, root):
         self.root = root
@@ -130,16 +134,21 @@ class SocialtecCliente:
 
         #ESTO TAMBIEN HAY QUE CAMBIARLO CON LA LOGICA DEL SERVIDOR
         
+        cliente = ClienteTCP()
+        cliente.conectar("127.0.0.1", 5000)
+        cliente.enviar(usuario)
+        cliente.enviar(contra)
+        cliente.enviar("login")
+        
+        respuesta = cliente.recibir()
+        cliente.cerrar()
 
-        exito, user_id, nombre, foto = self.registro.login(usuario, contra)
-    
-        if exito:
+        if respuesta == "Login Exitoso":
             self.usuario_actual = usuario
             self.mostrar_perfil()
-            print(f"\n Login exitoso!")
-            print(f"ID: {user_id}")
-            print(f"Nombre: {nombre}")
-            print(f"Foto: {foto}")
+            
+        else:
+            messagebox.showerror("Usuario o contraseña incorrectos")
 
     
     # ---------INICIO PAGINA REGISTRO---------------
@@ -350,9 +359,18 @@ class SocialtecCliente:
             messagebox.showwarning("Advertencia", "Por favor seleccione una foto de perfil")
             return
         
-        #AQUI NO SERIA REGISTRARLO DE UNA VEZ SINO MANDARLO AL ERVER Y DE AHI HACER LA VERIFICACION Y LLAMAR AL METODO
-        self.registro.registrar_usuario(usuario, nombre_completo, contra, self.foto_perfil_path)
+        cliente = ClienteTCP()
+        cliente.conectar(ip, puerto)
+        cliente.enviar(usuario)
+        cliente.enviar(nombre_completo)
+        cliente.enviar("registro")
+        cliente.enviar(contra)
+        cliente.enviar(self.foto_perfil_path)
+        cliente.recibir()
+
+        #self.registro.registrar_usuario(usuario, nombre_completo, contra, self.foto_perfil_path)
         messagebox.showinfo("Éxito", "Cuenta creada exitosamente")
+        cliente.cerrar()
         self.mostrar_login()
 
     
@@ -671,7 +689,7 @@ class SocialtecCliente:
 
 
     def mostrar_resultado_busqueda(self, resultado):
-    
+
         frame_resultado = tk.Frame(
             self.frame_lista_resultados,
             bg=self.colores['fondo'],
@@ -679,16 +697,15 @@ class SocialtecCliente:
             borderwidth=1
         )
         frame_resultado.pack(fill='x', padx=5, pady=5)
-        
-    
+
         tk.Label(
             frame_resultado,
             text=resultado['nombre'],
             font=('Arial', 14),
             bg=self.colores['fondo']
         ).pack(side='left', padx=20, pady=15)
+
         
-    
         btn_ver = tk.Button(
             frame_resultado,
             text="Ver Perfil",
@@ -699,7 +716,7 @@ class SocialtecCliente:
             command=lambda: self.click_ver_perfil_busqueda(resultado)
         )
         btn_ver.pack(side='right', padx=5, pady=5)
-        
+
     
         if resultado['es_amigo']:
             btn_eliminar = tk.Button(
@@ -712,8 +729,7 @@ class SocialtecCliente:
                 command=lambda: self.click_eliminar_amistad(resultado)
             )
             btn_eliminar.pack(side='right', padx=5, pady=5)
-            
-    
+
             tk.Label(
                 frame_resultado,
                 text="Amigo",
@@ -721,6 +737,20 @@ class SocialtecCliente:
                 bg=self.colores['fondo'],
                 fg=self.colores['secundario']
             ).pack(side='right', padx=10)
+
+        
+        else:
+            btn_agregar = tk.Button(
+                frame_resultado,
+                text="Agregar Amigo",
+                font=('Arial', 10),
+                bg=self.colores['secundario'],
+                fg=self.colores['blanco'],
+                cursor='hand2',
+                command=lambda: self.click_agregar_amistad(resultado)
+            )
+            btn_agregar.pack(side='right', padx=5, pady=5)
+
     
 
     def click_ver_perfil_busqueda(self, resultado):
@@ -738,6 +768,15 @@ class SocialtecCliente:
             messagebox.showinfo("Éxito", f"Amistad con {resultado['nombre']} eliminada")
             self.click_buscar_persona()  
 
+    def click_agregar_amistad(self, resultado):
+        respuesta = messagebox.askyesno(
+            "Confirmar",
+            f"¿Desea enviar solicitud de amistad a {resultado['nombre']}?"
+        )
+
+        if respuesta:
+            messagebox.showinfo("Solicitud enviada", f"Solicitud enviada a {resultado['nombre']}")
+
 
 
 
@@ -748,5 +787,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = SocialtecCliente(root)
     root.mainloop()
-    
-    
