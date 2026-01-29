@@ -129,9 +129,17 @@ class SocialtecCliente:
             return
 
         #ESTO TAMBIEN HAY QUE CAMBIARLO CON LA LOGICA DEL SERVIDOR
-        if self.registro.login(usuario, contra):
+        
+
+        exito, user_id, nombre, foto = self.registro.login(usuario, contra)
+    
+        if exito:
             self.usuario_actual = usuario
             self.mostrar_perfil()
+            print(f"\n Login exitoso!")
+            print(f"ID: {user_id}")
+            print(f"Nombre: {nombre}")
+            print(f"Foto: {foto}")
 
     
     # ---------INICIO PAGINA REGISTRO---------------
@@ -343,7 +351,7 @@ class SocialtecCliente:
             return
         
         #AQUI NO SERIA REGISTRARLO DE UNA VEZ SINO MANDARLO AL ERVER Y DE AHI HACER LA VERIFICACION Y LLAMAR AL METODO
-        self.registro.registrar_usuario(usuario, contra, nombre_completo, self.foto_perfil_path)
+        self.registro.registrar_usuario(usuario, nombre_completo, contra, self.foto_perfil_path)
         messagebox.showinfo("Éxito", "Cuenta creada exitosamente")
         self.mostrar_login()
 
