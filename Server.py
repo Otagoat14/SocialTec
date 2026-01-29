@@ -8,16 +8,28 @@ PUERTO = 5000
 def manejar_cliente(cliente, addr):
     print("Cliente recibido")
 
-    mensaje = cliente.recv(1024).decode()
-    print("Mensaje recibido")
+    buffer = ""
 
-    mensaje_temp = "login"
-    respuesta = enrutador(mensaje_temp)
+    while buffer.count("\n") < 2:
+        data = cliente.recv(1024).decode()
+        if not data:
+            break
+        buffer += data
 
+    mensajes = buffer.strip().split("\n")
+
+    mensaje1 = mensajes[0]
+    mensaje2 = mensajes[1]
+
+    print("Mensaje 1 recibido:", mensaje1)
+    print("Mensaje 2 recibido:", mensaje2)
+
+    respuesta = enrutador("login")
     cliente.sendall(respuesta.encode())
 
     cliente.close()
     print("Cliente atendido")
+
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
