@@ -1,6 +1,6 @@
 import socket
 
-puerto = 5000
+puerto = 5001
 ip = "127.0.0.1"
 
 class ClienteTCP:
