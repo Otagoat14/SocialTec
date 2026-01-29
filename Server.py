@@ -21,9 +21,6 @@ def manejar_cliente(cliente, addr):
     mensaje1 = mensajes[0]
     mensaje2 = mensajes[1]
 
-    print("Mensaje 1 recibido:", mensaje1)
-    print("Mensaje 2 recibido:", mensaje2)
-
     respuesta = enrutador("login")
     cliente.sendall(respuesta.encode())
 
