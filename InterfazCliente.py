@@ -129,7 +129,7 @@ class SocialtecCliente:
             return
 
         #ESTO TAMBIEN HAY QUE CAMBIARLO CON LA LOGICA DEL SERVIDOR
-        if self.registro.login(usuario, contra):
+        if self.registro.login(usuario, contra) == True:
             self.usuario_actual = usuario
             self.mostrar_perfil()
 
