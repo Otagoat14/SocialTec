@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from PIL import Image, ImageTk
 import os
+import threading
 from Registro import ManejoUsuarios
 from Cliente_Prueba import *
 
@@ -132,23 +133,65 @@ class SocialtecCliente:
             messagebox.showwarning("Advertencia", "Por favor complete todos los campos")
             return
 
-        #ESTO TAMBIEN HAY QUE CAMBIARLO CON LA LOGICA DEL SERVIDOR
-        
-        cliente = ClienteTCP()
-        cliente.conectar("127.0.0.1", 5000)
-        cliente.enviar(usuario)
-        cliente.enviar(contra)
-        cliente.enviar("login")
-        
-        respuesta = cliente.recibir()
-        cliente.cerrar()
+        # Deshabilitar botón mientras procesa
+        for widget in self.root.winfo_children():
+            if isinstance(widget, tk.Frame):
+                for btn in widget.winfo_children():
+                    if isinstance(btn, tk.Frame):
+                        for b in btn.winfo_children():
+                            if isinstance(b, tk.Button):
+                                b.config(state='disabled')
 
-        if respuesta == "Login Exitoso":
-            self.usuario_actual = usuario
-            self.mostrar_perfil()
+        # Ejecutar login en un hilo separado
+        threading.Thread(target=self._realizar_login, args=(usuario, contra), daemon=True).start()
+
+    def _realizar_login(self, usuario, contra):
+        """Función que se ejecuta en un hilo separado para no congelar la interfaz"""
+        try:
+            print(f"🔐 Intentando login para: {usuario}")
             
-        else:
-            messagebox.showerror("Usuario o contraseña incorrectos")
+            cliente = ClienteTCP()
+            if not cliente.conectar(ip, puerto):
+                self.root.after(0, lambda: messagebox.showerror("Error", "No se pudo conectar al servidor"))
+                self.root.after(0, self._habilitar_botones)
+                return
+            
+            print("✓ Conectado al servidor")
+            cliente.enviar("login")
+            cliente.enviar(usuario)
+            cliente.enviar(contra)
+            
+            print("📤 Datos enviados, esperando respuesta...")
+            respuesta = cliente.recibir()
+            print(f"📥 Respuesta recibida: {respuesta}")
+            cliente.cerrar()
+
+            # Usar after() para actualizar la interfaz desde el hilo principal
+            if respuesta and "Login Exitoso" in respuesta:
+                print(f"✅ Login exitoso")
+                self.usuario_actual = usuario
+                self.root.after(0, self.mostrar_perfil)
+            else:
+                print(f"❌ Login fallido")
+                self.root.after(0, lambda: messagebox.showerror("Error", "Usuario o contraseña incorrectos"))
+                self.root.after(0, self._habilitar_botones)
+                
+        except Exception as e:
+            print(f"❌ Error en login: {e}")
+            import traceback
+            traceback.print_exc()
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Error al iniciar sesión: {str(e)}"))
+            self.root.after(0, self._habilitar_botones)
+
+    def _habilitar_botones(self):
+        """Habilitar botones después de un intento de login"""
+        for widget in self.root.winfo_children():
+            if isinstance(widget, tk.Frame):
+                for btn in widget.winfo_children():
+                    if isinstance(btn, tk.Frame):
+                        for b in btn.winfo_children():
+                            if isinstance(b, tk.Button):
+                                b.config(state='normal')
 
     
     # ---------INICIO PAGINA REGISTRO---------------
@@ -272,116 +315,119 @@ class SocialtecCliente:
         frame_foto.pack(pady=(0, 20))
 
         
-        self.label_foto = tk.Label(
+        self.label_ruta_foto = tk.Label(
             frame_foto,
-            text="Sin foto seleccionada",
+            text="Ningún archivo seleccionado",
             font=('Arial', 10),
-            bg=self.colores['fondo'],
-            width=30,
-            height=2
+            bg=self.colores['blanco'],
+            fg=self.colores['gris']
         )
-        self.label_foto.pack(side='left', padx=(0, 10))
+        self.label_ruta_foto.pack(side='left', padx=(0, 10))
 
         
-        btn_foto = tk.Button(
+        btn_seleccionar = tk.Button(
             frame_foto,
-            text="Seleccionar",
+            text="Seleccionar Foto",
             font=('Arial', 10),
-            bg=self.colores['primario'],
+            bg=self.colores['gris'],
             fg=self.colores['blanco'],
             cursor='hand2',
             command=self.seleccionar_foto
         )
-        btn_foto.pack(side='left')
+        btn_seleccionar.pack(side='left')
+
         
-        
-        frame_botones = tk.Frame(frame_form, bg=self.colores['blanco'])
-        frame_botones.pack(pady=10)
-        
-        
-        btn_crear = tk.Button(
-            frame_botones,
+        btn_registrar = tk.Button(
+            frame_form,
             text="Crear Cuenta",
             font=('Arial', 12, 'bold'),
             bg=self.colores['secundario'],
             fg=self.colores['blanco'],
-            width=15,
+            width=35,
             height=2,
             cursor='hand2',
-            command=self.click_crear_cuenta
+            command=self.click_registrar
         )
-        btn_crear.pack(side='left', padx=5)
+        btn_registrar.pack(pady=(10, 5))
 
         
-        btn_cancelar = tk.Button(
-            frame_botones,
-            text="Cancelar",
-            font=('Arial', 12),
-            bg=self.colores['gris'],
-            fg=self.colores['blanco'],
-            width=15,
-            height=2,
+        btn_volver = tk.Button(
+            frame_form,
+            text="Ya tengo cuenta",
+            font=('Arial', 10),
+            bg=self.colores['fondo'],
+            fg=self.colores['texto'],
             cursor='hand2',
+            relief=tk.FLAT,
             command=self.mostrar_login
         )
-        btn_cancelar.pack(side='left', padx=5)
+        btn_volver.pack()
 
     
     def seleccionar_foto(self):
         archivo = filedialog.askopenfilename(
             title="Seleccionar foto de perfil",
-            filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.gif *.bmp")]
+            filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.gif")]
         )
         
         if archivo:
             self.foto_perfil_path = archivo
             nombre_archivo = os.path.basename(archivo)
-            self.label_foto.config(text=nombre_archivo)
+            self.label_ruta_foto.config(text=nombre_archivo)
 
     
-    def click_crear_cuenta(self):
-        #AQUI TODAVIA NO HE PEGADO LA LOGICA JUNTO CON LA PARTE DE feature/Cliente
-        nombre_completo = self.entry_nombre_completo.get()
+    def click_registrar(self):
+        nombre = self.entry_nombre_completo.get()
         usuario = self.entry_usuario_nuevo.get()
-        contra = self.entry_password_nuevo.get()
-        contra_confirmacion = self.entry_password_confirm.get()
+        password = self.entry_password_nuevo.get()
+        password_confirm = self.entry_password_confirm.get()
         
-        
-        if not all([nombre_completo, usuario, contra, contra_confirmacion]):
-            messagebox.showwarning("Advertencia", "Por favor complete todos los campos")
+        if not all([nombre, usuario, password, password_confirm]):
+            messagebox.showwarning("Advertencia", "Complete todos los campos obligatorios")
             return
         
-        if contra != contra_confirmacion:
+        if password != password_confirm:
             messagebox.showerror("Error", "Las contraseñas no coinciden")
             return
         
-        if not self.foto_perfil_path:
-            messagebox.showwarning("Advertencia", "Por favor seleccione una foto de perfil")
-            return
+        foto = self.foto_perfil_path if self.foto_perfil_path else ""
         
-        cliente = ClienteTCP()
-        cliente.conectar(ip, puerto)
-        cliente.enviar(usuario)
-        cliente.enviar(nombre_completo)
-        cliente.enviar("registro")
-        cliente.enviar(contra)
-        cliente.enviar(self.foto_perfil_path)
-        cliente.recibir()
+        # Ejecutar registro en un hilo separado
+        threading.Thread(target=self._realizar_registro, args=(usuario, nombre, password, foto), daemon=True).start()
 
-        #self.registro.registrar_usuario(usuario, nombre_completo, contra, self.foto_perfil_path)
-        messagebox.showinfo("Éxito", "Cuenta creada exitosamente")
-        cliente.cerrar()
-        self.mostrar_login()
+    def _realizar_registro(self, usuario, nombre, password, foto):
+        """Función que se ejecuta en un hilo separado"""
+        try:
+            cliente = ClienteTCP()
+            if not cliente.conectar(ip, puerto):
+                self.root.after(0, lambda: messagebox.showerror("Error", "No se pudo conectar al servidor"))
+                return
+                
+            cliente.enviar("registro")
+            cliente.enviar(usuario)
+            cliente.enviar(nombre)
+            cliente.enviar(password)
+            cliente.enviar(foto)
+            
+            respuesta = cliente.recibir()
+            cliente.cerrar()
+            
+            if respuesta and "Registro Exitoso" in respuesta:
+                self.root.after(0, lambda: messagebox.showinfo("Éxito", "Cuenta creada correctamente"))
+                self.root.after(0, self.mostrar_login)
+            else:
+                self.root.after(0, lambda: messagebox.showerror("Error", "No se pudo crear la cuenta"))
+                
+        except Exception as e:
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Error al registrar: {str(e)}"))
 
     
-    #---------PAGINA PERFIL---------------  
+    # ----------PANTALLA DE PERFIL-------------
     def mostrar_perfil(self):
         self.limpiar_ventana()
         
-        
         frame_top = tk.Frame(self.root, bg=self.colores['primario'], height=60)
         frame_top.pack(fill='x')
-
         
         tk.Label(
             frame_top,
@@ -391,10 +437,9 @@ class SocialtecCliente:
             bg=self.colores['primario']
         ).pack(side='left', padx=20, pady=10)
         
-
         btn_buscar = tk.Button(
             frame_top,
-            text="Buscar Personas",
+            text="🔍 Buscar",
             font=('Arial', 11),
             bg=self.colores['blanco'],
             fg=self.colores['texto'],
@@ -403,103 +448,95 @@ class SocialtecCliente:
         )
         btn_buscar.pack(side='left', padx=10)
         
-        
-        btn_cerrar = tk.Button(
+        btn_logout = tk.Button(
             frame_top,
             text="Cerrar Sesión",
             font=('Arial', 11),
-            bg=self.colores['blanco'],
-            fg=self.colores['texto'],
+            bg='#dc3545',
+            fg=self.colores['blanco'],
             cursor='hand2',
             command=self.mostrar_login
         )
-        btn_cerrar.pack(side='right', padx=20)
+        btn_logout.pack(side='right', padx=20)
         
-
         frame_principal = tk.Frame(self.root, bg=self.colores['fondo'])
-        frame_principal.pack(fill='both', expand=True, padx=20, pady=20)
+        frame_principal.pack(fill='both', expand=True)
         
-        
-        frame_perfil = tk.Frame(frame_principal, bg=self.colores['blanco'], relief=tk.SOLID, borderwidth=1)
-        frame_perfil.pack(side='left', fill='both', expand=True, padx=(0, 10))
-        
-        
-        canvas_foto = tk.Canvas(
-            frame_perfil,
-            width=150,
-            height=150,
-            bg=self.colores['gris'],
-            highlightthickness=0
-        )
-        canvas_foto.pack(pady=20)
-        canvas_foto.create_text(75, 75, text="👤", font=('Arial', 60))
-        
+        frame_info = tk.Frame(frame_principal, bg=self.colores['blanco'], padx=40, pady=30)
+        frame_info.pack(pady=20, padx=20, fill='x')
         
         tk.Label(
-            frame_perfil,
-            text=self.usuario_actual or "Usuario",
+            frame_info,
+            text=f"¡Bienvenido, {self.usuario_actual}!",
             font=('Arial', 24, 'bold'),
             bg=self.colores['blanco']
         ).pack(pady=10)
         
-        
-        tk.Label(
-            frame_perfil,
-            text="Perfil de usuario",
-            font=('Arial', 12),
-            bg=self.colores['blanco'],
-            fg=self.colores['gris']
-        ).pack(pady=5)
-        
-        
-        frame_amigos = tk.Frame(frame_principal, bg=self.colores['blanco'], relief=tk.SOLID, borderwidth=1)
-        frame_amigos.pack(side='right', fill='both', expand=True)
-        
+        frame_amigos = tk.Frame(frame_principal, bg=self.colores['blanco'], padx=20, pady=20)
+        frame_amigos.pack(pady=10, padx=20, fill='both', expand=True)
         
         tk.Label(
             frame_amigos,
-            text="Lista de Amigos",
+            text="Mis Amigos",
             font=('Arial', 18, 'bold'),
             bg=self.colores['blanco']
-        ).pack(pady=15)
+        ).pack(pady=10)
         
-        
-        frame_scroll_amigos = tk.Frame(frame_amigos, bg=self.colores['blanco'])
-        frame_scroll_amigos.pack(fill='both', expand=True, padx=10, pady=(0, 10))
-
-        
-        canvas_amigos = tk.Canvas(frame_scroll_amigos, bg=self.colores['blanco'])
-        scrollbar_amigos = ttk.Scrollbar(frame_scroll_amigos, orient="vertical", command=canvas_amigos.yview)
+        canvas_amigos = tk.Canvas(frame_amigos, bg=self.colores['blanco'])
+        scrollbar_amigos = ttk.Scrollbar(frame_amigos, orient="vertical", command=canvas_amigos.yview)
         self.frame_lista_amigos = tk.Frame(canvas_amigos, bg=self.colores['blanco'])
-
         
         self.frame_lista_amigos.bind(
             "<Configure>",
             lambda e: canvas_amigos.configure(scrollregion=canvas_amigos.bbox("all"))
         )
-
         
         canvas_amigos.create_window((0, 0), window=self.frame_lista_amigos, anchor="nw")
         canvas_amigos.configure(yscrollcommand=scrollbar_amigos.set)
-
         
         canvas_amigos.pack(side="left", fill="both", expand=True)
         scrollbar_amigos.pack(side="right", fill="y")
         
-        
-    #ESTA FUNCION SE REMPLAZARA EN BASE A LA LOGICA CON QUE SE CREEN LOS AMIGOS
-    def mostrar_lista_amigos_ejemplo(self):
+        # Cargar amigos desde el servidor en un hilo separado
+        threading.Thread(target=self.cargar_amigos, daemon=True).start()
 
-        amigos_ejemplo = [
-            "Ana García",
-            "Carlos Rodríguez",
-            "Elena Martínez",
-            "Juan Pérez",
-            "María López"
-        ]
+    def cargar_amigos(self):
+        """Cargar la lista de amigos desde el servidor"""
+        try:
+            cliente = ClienteTCP()
+            if not cliente.conectar(ip, puerto):
+                self.root.after(0, lambda: messagebox.showerror("Error", "No se pudo conectar al servidor"))
+                return
+            
+            cliente.enviar("obtener_amigos")
+            cliente.enviar(self.usuario_actual)
+            
+            amigos = cliente.recibir_json()
+            cliente.cerrar()
+            
+            # Actualizar interfaz en el hilo principal
+            self.root.after(0, lambda: self._mostrar_amigos(amigos))
+            
+        except Exception as e:
+            print(f"Error al cargar amigos: {e}")
+            self.root.after(0, lambda: self._mostrar_amigos(None))
 
+    def _mostrar_amigos(self, amigos):
+        """Mostrar amigos en la interfaz (debe ejecutarse en el hilo principal)"""
+        for widget in self.frame_lista_amigos.winfo_children():
+            widget.destroy()
         
-        for amigo in amigos_ejemplo:
+        if not amigos:
+            tk.Label(
+                self.frame_lista_amigos,
+                text="No tienes amigos aún. ¡Busca personas para agregar!",
+                font=('Arial', 12),
+                bg=self.colores['blanco'],
+                fg=self.colores['gris']
+            ).pack(pady=20)
+            return
+        
+        for amigo in amigos:
             frame_amigo = tk.Frame(
                 self.frame_lista_amigos,
                 bg=self.colores['fondo'],
@@ -508,15 +545,13 @@ class SocialtecCliente:
             )
             frame_amigo.pack(fill='x', padx=5, pady=5)
             
-
             tk.Label(
                 frame_amigo,
-                text=amigo,
+                text=f"{amigo['username']} - {amigo['nombre']}",
                 font=('Arial', 12),
                 bg=self.colores['fondo']
             ).pack(side='left', padx=10, pady=10)
             
-
             btn_ver = tk.Button(
                 frame_amigo,
                 text="Ver Perfil",
@@ -529,8 +564,8 @@ class SocialtecCliente:
             btn_ver.pack(side='right', padx=5, pady=5)
 
     
-    def click_ver_perfil_amigo(self, nombre_amigo):
-        messagebox.showinfo("Ver Perfil", f"Mostrando perfil de {nombre_amigo}")
+    def click_ver_perfil_amigo(self, amigo):
+        messagebox.showinfo("Ver Perfil", f"Mostrando perfil de {amigo['username']}")
 
     #---------PANTALLA DE BUSQUEDA-------------
 
@@ -581,7 +616,7 @@ class SocialtecCliente:
         
         tk.Label(
             frame_busqueda,
-            text="Nombre:",
+            text="Usuario:",
             font=('Arial', 12),
             bg=self.colores['blanco']
         ).pack(side='left', padx=(0, 10))
@@ -590,30 +625,11 @@ class SocialtecCliente:
         self.entry_buscar_nombre = tk.Entry(
             frame_busqueda,
             font=('Arial', 12),
-            width=20,
+            width=30,
             relief=tk.SOLID,
             borderwidth=1
         )
         self.entry_buscar_nombre.pack(side='left', padx=(0, 20))
-        
-        
-        tk.Label(
-            frame_busqueda,
-            text="Apellido:",
-            font=('Arial', 12),
-            bg=self.colores['blanco']
-        ).pack(side='left', padx=(0, 10))
-
-        
-        self.entry_buscar_apellido = tk.Entry(
-            frame_busqueda,
-            font=('Arial', 12),
-            width=20,
-            relief=tk.SOLID,
-            borderwidth=1
-        )
-        self.entry_buscar_apellido.pack(side='left', padx=(0, 20))
-        
         
         btn_buscar = tk.Button(
             frame_busqueda,
@@ -663,33 +679,72 @@ class SocialtecCliente:
 
     
     def click_buscar_persona(self):
-        
+        """Buscar personas en el servidor"""
         nombre = self.entry_buscar_nombre.get()
-        apellido = self.entry_buscar_apellido.get()
         
-        
-        if not nombre and not apellido:
-            messagebox.showwarning("Advertencia", "Ingrese al menos un criterio de búsqueda")
+        if not nombre:
+            messagebox.showwarning("Advertencia", "Ingrese un nombre de usuario para buscar")
             return
         
-        
+        # Limpiar resultados anteriores
         for widget in self.frame_lista_resultados.winfo_children():
             widget.destroy()
         
+        # Mostrar mensaje de carga
+        tk.Label(
+            self.frame_lista_resultados,
+            text="Buscando...",
+            font=('Arial', 12),
+            bg=self.colores['blanco'],
+            fg=self.colores['gris']
+        ).pack(pady=20)
+
+        # Ejecutar búsqueda en un hilo separado
+        threading.Thread(target=self._realizar_busqueda, args=(nombre,), daemon=True).start()
+
+    def _realizar_busqueda(self, nombre):
+        """Función que se ejecuta en un hilo separado"""
+        try:
+            cliente = ClienteTCP()
+            if not cliente.conectar(ip, puerto):
+                self.root.after(0, lambda: messagebox.showerror("Error", "No se pudo conectar al servidor"))
+                return
+            
+            cliente.enviar("buscar")
+            cliente.enviar(nombre)
+            cliente.enviar(self.usuario_actual)
+            
+            resultados = cliente.recibir_json()
+            cliente.cerrar()
+            
+            # Actualizar interfaz en el hilo principal
+            self.root.after(0, lambda: self._mostrar_resultados(resultados))
+            
+        except Exception as e:
+            print(f"Error en búsqueda: {e}")
+            self.root.after(0, lambda: self._mostrar_resultados(None))
+
+    def _mostrar_resultados(self, resultados):
+        """Mostrar resultados en la interfaz"""
+        for widget in self.frame_lista_resultados.winfo_children():
+            widget.destroy()
         
-        resultados_ejemplo = [
-            {"nombre": "Juan Pérez", "es_amigo": True},
-            {"nombre": "María Pérez", "es_amigo": False},
-            {"nombre": "Pedro Pérez", "es_amigo": False}
-        ]
+        if not resultados:
+            tk.Label(
+                self.frame_lista_resultados,
+                text="No se encontraron resultados",
+                font=('Arial', 12),
+                bg=self.colores['blanco'],
+                fg=self.colores['gris']
+            ).pack(pady=20)
+            return
         
-        
-        for resultado in resultados_ejemplo:
+        for resultado in resultados:
             self.mostrar_resultado_busqueda(resultado)
 
 
     def mostrar_resultado_busqueda(self, resultado):
-
+        """Mostrar un resultado de búsqueda con opciones de amistad"""
         frame_resultado = tk.Frame(
             self.frame_lista_resultados,
             bg=self.colores['fondo'],
@@ -700,25 +755,22 @@ class SocialtecCliente:
 
         tk.Label(
             frame_resultado,
-            text=resultado['nombre'],
-            font=('Arial', 14),
+            text=resultado['username'],
+            font=('Arial', 14, 'bold'),
             bg=self.colores['fondo']
         ).pack(side='left', padx=20, pady=15)
 
         
-        btn_ver = tk.Button(
-            frame_resultado,
-            text="Ver Perfil",
-            font=('Arial', 10),
-            bg=self.colores['primario'],
-            fg=self.colores['blanco'],
-            cursor='hand2',
-            command=lambda: self.click_ver_perfil_busqueda(resultado)
-        )
-        btn_ver.pack(side='right', padx=5, pady=5)
-
-    
+        # Si ya son amigos
         if resultado['es_amigo']:
+            tk.Label(
+                frame_resultado,
+                text="✓ Amigo",
+                font=('Arial', 11),
+                bg=self.colores['fondo'],
+                fg=self.colores['secundario']
+            ).pack(side='right', padx=10)
+            
             btn_eliminar = tk.Button(
                 frame_resultado,
                 text="Eliminar Amistad",
@@ -730,19 +782,11 @@ class SocialtecCliente:
             )
             btn_eliminar.pack(side='right', padx=5, pady=5)
 
-            tk.Label(
-                frame_resultado,
-                text="Amigo",
-                font=('Arial', 10),
-                bg=self.colores['fondo'],
-                fg=self.colores['secundario']
-            ).pack(side='right', padx=10)
-
-        
+        # Si no son amigos
         else:
             btn_agregar = tk.Button(
                 frame_resultado,
-                text="Agregar Amigo",
+                text="+ Agregar Amigo",
                 font=('Arial', 10),
                 bg=self.colores['secundario'],
                 fg=self.colores['blanco'],
@@ -753,29 +797,74 @@ class SocialtecCliente:
 
     
 
-    def click_ver_perfil_busqueda(self, resultado):
-        messagebox.showinfo("Ver Perfil", f"Mostrando perfil de {resultado['nombre']}")
-    
-
     def click_eliminar_amistad(self, resultado):
+        """Eliminar una amistad"""
         respuesta = messagebox.askyesno(
             "Confirmar",
-            f"¿Está seguro que desea eliminar la amistad con {resultado['nombre']}?"
+            f"¿Está seguro que desea eliminar la amistad con {resultado['username']}?"
         )
         
-        #AQUI NO HAY NINGUNA LOIGICA DE AMIGOS IMPLEMENTAD AUN
         if respuesta:
-            messagebox.showinfo("Éxito", f"Amistad con {resultado['nombre']} eliminada")
-            self.click_buscar_persona()  
+            threading.Thread(target=self._realizar_eliminar_amistad, args=(resultado,), daemon=True).start()
+
+    def _realizar_eliminar_amistad(self, resultado):
+        """Eliminar amistad en un hilo separado"""
+        try:
+            cliente = ClienteTCP()
+            if not cliente.conectar(ip, puerto):
+                self.root.after(0, lambda: messagebox.showerror("Error", "No se pudo conectar al servidor"))
+                return
+            
+            cliente.enviar("eliminar_amistad")
+            cliente.enviar(self.usuario_actual)
+            cliente.enviar(resultado['username'])
+            
+            respuesta_servidor = cliente.recibir()
+            cliente.cerrar()
+            
+            if respuesta_servidor and "eliminada" in respuesta_servidor:
+                self.root.after(0, lambda: messagebox.showinfo("Éxito", f"Amistad con {resultado['username']} eliminada"))
+                self.root.after(0, self.click_buscar_persona)
+            else:
+                self.root.after(0, lambda: messagebox.showerror("Error", "No se pudo eliminar la amistad"))
+                
+        except Exception as e:
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Error: {str(e)}"))
+            
 
     def click_agregar_amistad(self, resultado):
+        """Enviar solicitud de amistad"""
         respuesta = messagebox.askyesno(
             "Confirmar",
-            f"¿Desea enviar solicitud de amistad a {resultado['nombre']}?"
+            f"¿Desea enviar solicitud de amistad a {resultado['username']}?"
         )
 
         if respuesta:
-            messagebox.showinfo("Solicitud enviada", f"Solicitud enviada a {resultado['nombre']}")
+            threading.Thread(target=self._realizar_solicitud_amistad, args=(resultado,), daemon=True).start()
+
+
+    def _realizar_solicitud_amistad(self, resultado):
+        """Enviar solicitud en un hilo separado"""
+        try:
+            cliente = ClienteTCP()
+            if not cliente.conectar(ip, puerto):
+                self.root.after(0, lambda: messagebox.showerror("Error", "No se pudo conectar al servidor"))
+                return
+            
+            cliente.enviar("solicitar_amistad")
+            cliente.enviar(self.usuario_actual)
+            cliente.enviar(resultado['username'])
+            
+            respuesta_servidor = cliente.recibir()
+            cliente.cerrar()
+            
+            if respuesta_servidor and "enviada" in respuesta_servidor:
+                self.root.after(0, lambda: messagebox.showinfo("Éxito", f"Solicitud enviada a {resultado['username']}"))
+            else:
+                self.root.after(0, lambda: messagebox.showerror("Error", "No se pudo enviar la solicitud"))
+                
+        except Exception as e:
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Error: {str(e)}"))
 
 
 
