@@ -86,33 +86,21 @@ class Grafo:
 
         existe = dfs(inicio)
         return existe, path if existe else []
+    
+    def construir_desde_bd(self, lista_amistades):
+        self.grafo.clear()
+
+        for usuario, amigo in lista_amistades:
+            if usuario not in self.grafo:
+                self.crear_nodo(usuario)
+            if amigo not in self.grafo:
+                self.crear_nodo(amigo)
+
+            self.apuntar(usuario, amigo)
+
 
 
         
-
-grafo = Grafo()
-
-
-grafo.crear_nodo("Juan")
-grafo.crear_nodo("Andres")
-grafo.crear_nodo("Carlos")
-grafo.crear_nodo("Daniel")
-
-grafo.apuntar("Juan", "Carlos")
-grafo.apuntar("Juan", "Andres")
-grafo.apuntar("Juan", "Daniel")
-grafo.apuntar("Andres", "Carlos")
-grafo.apuntar("Andres", "Daniel")
-grafo.apuntar("Andres", "Juan")
-grafo.apuntar("Daniel", "Carlos")
-
-print(grafo.grafo)
-
-grafo.imprimir_grafo()
-grafo.buscar_usuario("Juan")
-
-#grafo.obtener_amigos("Juan")
-
         
 
 

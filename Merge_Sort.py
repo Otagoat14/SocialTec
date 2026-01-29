@@ -1,4 +1,6 @@
 #ESTE CODIGO TENGO QUE MODIFICARLO PARA QUE SE PUEDA HACER CON LA LISTA DE AMIGOS
+from Base_de_datos import BaseDeDatos
+
 
 def merge_sort(lista):
 
@@ -42,7 +44,12 @@ def merge_sort(lista):
 
     return lista
 
-lista_prueba = ["Daniel", "Carlos", "Ricardo"]
-print(merge_sort(lista_prueba))
+
+
+def amigos_ordenados( username):
+    db = BaseDeDatos()
+    amigos = db.obtener_amigos_de_usuario(username)
+    return merge_sort(amigos)
+
 
 

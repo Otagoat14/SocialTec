@@ -363,6 +363,31 @@ class BaseDeDatos:
             """)
             resultado = cursor.fetchone()[0]
             return resultado if resultado else 0
+        
+    def obtener_todas_las_amistades(self):
+        with self.conectar() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+            SELECT u1.username, u2.username
+            FROM amistades a
+            JOIN usuarios u1 ON a.usuario_id = u1.id
+            JOIN usuarios u2 ON a.amigo_id = u2.id
+            """)
+            return cursor.fetchall()
+        
+    def obtener_amigos_de_usuario(self, username):
+        with self.conectar() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+            SELECT u2.username
+            FROM amistades a
+            JOIN usuarios u1 ON a.usuario_id = u1.id
+            JOIN usuarios u2 ON a.amigo_id = u2.id
+            WHERE u1.username = ?
+            """, (username,))
+            return [fila[0] for fila in cursor.fetchall()]
+
+
 
 
 
