@@ -5,7 +5,10 @@ import os
 from Registro import ManejoUsuarios
 from Cliente_Prueba import *
 
-#CREO QUE HAY UN PROBLEMA CON LA LOGICA YA QUE EL SERVIDOR DEBERIA HACER TODAS LAS OPERACIONES HABRIA QUE HACERLAS EN EL SERVIDOR
+ip = "127.0.0.1"
+puerto = 5000
+
+
 class SocialtecCliente:
     def __init__(self, root):
         self.root = root
@@ -131,22 +134,21 @@ class SocialtecCliente:
 
         #ESTO TAMBIEN HAY QUE CAMBIARLO CON LA LOGICA DEL SERVIDOR
         
-        """cliente = ClienteTCP()
+        cliente = ClienteTCP()
         cliente.conectar("127.0.0.1", 5000)
         cliente.enviar(usuario)
         cliente.enviar(contra)
-        cliente.enviar("login")"""
+        cliente.enviar("login")
+        
+        respuesta = cliente.recibir()
+        cliente.cerrar()
 
-
-        exito, user_id, nombre, foto = self.registro.login(usuario, contra)
-    
-        if exito:
+        if respuesta == "Login Exitoso":
             self.usuario_actual = usuario
             self.mostrar_perfil()
-            print(f"\n Login exitoso!")
-            print(f"ID: {user_id}")
-            print(f"Nombre: {nombre}")
-            print(f"Foto: {foto}")
+            
+        else:
+            messagebox.showerror("Usuario o contraseña incorrectos")
 
     
     # ---------INICIO PAGINA REGISTRO---------------
@@ -357,9 +359,18 @@ class SocialtecCliente:
             messagebox.showwarning("Advertencia", "Por favor seleccione una foto de perfil")
             return
         
-        #AQUI NO SERIA REGISTRARLO DE UNA VEZ SINO MANDARLO AL ERVER Y DE AHI HACER LA VERIFICACION Y LLAMAR AL METODO
-        self.registro.registrar_usuario(usuario, nombre_completo, contra, self.foto_perfil_path)
+        cliente = ClienteTCP()
+        cliente.conectar(ip, puerto)
+        cliente.enviar(usuario)
+        cliente.enviar(nombre_completo)
+        cliente.enviar("registro")
+        cliente.enviar(contra)
+        cliente.enviar(self.foto_perfil_path)
+        cliente.recibir()
+
+        #self.registro.registrar_usuario(usuario, nombre_completo, contra, self.foto_perfil_path)
         messagebox.showinfo("Éxito", "Cuenta creada exitosamente")
+        cliente.cerrar()
         self.mostrar_login()
 
     
@@ -755,5 +766,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = SocialtecCliente(root)
     root.mainloop()
-    
-    

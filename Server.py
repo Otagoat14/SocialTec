@@ -18,13 +18,32 @@ def manejar_cliente(cliente, addr):
 
     mensajes = buffer.strip().split("\n")
 
-    mensaje1 = mensajes[0]
-    mensaje2 = mensajes[1]
-    mensaje3 = mensajes[2]
+    print(f"Tipo de operación: {mensajes[2]}")
     
-    if mensaje3 == "login":
+    if mensajes[2] == "login":
         cliente_login = ManejoUsuarios()
-        respuesta = cliente_login.login(mensaje1, mensaje2)
+        resultado = cliente_login.login(mensajes[0], mensajes[1])
+
+        if resultado[0] == True:
+            respuesta = "Login Exitoso"
+            
+        else:
+            respuesta = "Login Fallido"
+        
+
+        cliente.sendall(respuesta.encode())
+
+        
+    elif mensajes[2] == "registro":
+        cliente_registro = ManejoUsuarios()
+        
+        exito = cliente_registro.registrar_usuario(mensajes[0], mensajes[1], mensajes[3], mensajes[4])
+        
+        if exito:
+            respuesta = "Registro Exitoso"
+        else:
+            respuesta = "Registro Fallido"
+        
         cliente.sendall(respuesta.encode())
 
 
