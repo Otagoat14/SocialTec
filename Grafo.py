@@ -65,6 +65,29 @@ class Grafo:
         nx.draw(G, with_labels=True)
         plt.show()
 
+    def existe_path(self, inicio, fin):
+        visitados = set()
+        path = []
+
+        def dfs(actual):
+            visitados.add(actual)
+            path.append(actual)
+
+            if actual == fin:
+                return True
+
+            for vecino in self.grafo.get(actual, []):
+                if vecino not in visitados:
+                    if dfs(vecino):
+                        return True
+
+            path.pop()
+            return False
+
+        existe = dfs(inicio)
+        return existe, path if existe else []
+
+
         
 
 grafo = Grafo()
