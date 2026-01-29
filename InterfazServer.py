@@ -1,14 +1,15 @@
 import tkinter as tk
 from tkinter import messagebox
 from Grafo import Grafo   
+from Base_de_datos import BaseDeDatos
 
 class ServerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Servidor - Red Social")
 
-        self.grafo = Grafo()  
-
+        self.grafo = Grafo() 
+        self.base_datos = BaseDeDatos()
         # -------- SECCIÓN GRAFO --------
         tk.Button(root, text="Imprimir Grafo", command=self.imprimir_grafo).pack(pady=5)
 
@@ -52,10 +53,11 @@ class ServerGUI:
         else:
             self.resultado_path.config(text="No existe path entre los usuarios")
 
+
     def mostrar_estadisticas(self):
-        mas = self.grafo.usuario_con_mas_amigos()
-        menos = self.grafo.usuario_con_menos_amigos()
-        promedio = self.grafo.promedio_amigos()
+        mas = self.base_datos.usuario_con_mas_amigos()
+        menos = self.base_datos.usuario_con_menos_amigos()
+        promedio = self.base_datos.promedio_amigos()
 
         texto = (
             f"Usuario con más amigos: {mas}\n"
@@ -64,3 +66,10 @@ class ServerGUI:
         )
 
         self.stats_label.config(text=texto)
+
+if __name__ == "__main__":
+
+    root = tk.Tk()
+    app = ServerGUI(root)
+    root.mainloop()
+

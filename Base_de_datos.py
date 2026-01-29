@@ -321,4 +321,49 @@ class BaseDeDatos:
             LIMIT 20
             """, (f'%{termino}%', usuario_id, usuario_id))
             return cursor.fetchall()
+        
+    #METODOS PARA LA INTERFAZ DE SERVER
+
+    def usuario_con_mas_amigos(self):
+        with self.conectar() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+            SELECT u.username, COUNT(a.amigo_id) AS total
+            FROM usuarios u
+            LEFT JOIN amistades a ON u.id = a.usuario_id
+            GROUP BY u.id
+            ORDER BY total DESC
+            LIMIT 1
+            """)
+            return cursor.fetchone()
+        
+    def usuario_con_menos_amigos(self):
+        with self.conectar() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+            SELECT u.username, COUNT(a.amigo_id) AS total
+            FROM usuarios u
+            LEFT JOIN amistades a ON u.id = a.usuario_id
+            GROUP BY u.id
+            ORDER BY total ASC
+            LIMIT 1
+            """)
+            return cursor.fetchone()
+        
+    def promedio_amigos(self):
+        with self.conectar() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+            SELECT AVG(total) FROM (
+                SELECT COUNT(a.amigo_id) AS total
+                FROM usuarios u
+                LEFT JOIN amistades a ON u.id = a.usuario_id
+                GROUP BY u.id
+            )
+            """)
+            resultado = cursor.fetchone()[0]
+            return resultado if resultado else 0
+
+
+
 
