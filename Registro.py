@@ -1,4 +1,3 @@
-
 from Base_de_datos import BaseDeDatos
 from Encriptacion import Encriptador
 
@@ -15,9 +14,9 @@ class ManejoUsuarios:
         with self.base_datos.conectar() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-            INSERT INTO usuarios (username, nombre, password_hash , foto)
+            INSERT INTO usuarios (username, password_hash, nombre, foto)
             VALUES (?, ?, ?, ?)
-            """, (username, nombre_encriptado, password_hash , foto))
+            """, (username, password_hash, nombre_encriptado, foto))
 
         print("Usuario registrado")
 
@@ -54,4 +53,3 @@ class ManejoUsuarios:
 # contra_login = input("Introduzca su contra:")
 
 # manejo_usuarios.login(username_login, contra_login)
-

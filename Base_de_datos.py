@@ -1,16 +1,4 @@
 import sqlite3
-<<<<<<< HEAD
-
-class BaseDeDatos :
-    def __init__(self, nombre_archivo = "usuarios.db"):
-        self.nombre_archivo = nombre_archivo
-        self.crear_tabla()
-        
-    def conectar(self):
-        return sqlite3.connect(self.nombre_archivo)
-    
-    def crear_tabla(self):
-=======
 from datetime import datetime
 
 class BaseDeDatos:
@@ -30,7 +18,6 @@ class BaseDeDatos:
     
     def crear_tabla_usuarios(self):
         """Crear la tabla de usuarios (tu tabla original)"""
->>>>>>> d059e9bcf077a9a26bfd10513af49c421b2dcf0d
         with self.conectar() as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -39,12 +26,6 @@ class BaseDeDatos:
                 username TEXT UNIQUE NOT NULL,
                 nombre BLOB NOT NULL,
                 password_hash BLOB NOT NULL,
-<<<<<<< HEAD
-                foto TEXT )
-            """)
-
-    def buscar_usuario_por_username(self, username):
-=======
                 foto TEXT
             )
             """)
@@ -104,7 +85,6 @@ class BaseDeDatos:
 
     def buscar_usuario_por_username(self, username):
 
->>>>>>> d059e9bcf077a9a26bfd10513af49c421b2dcf0d
         with self.conectar() as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -113,13 +93,6 @@ class BaseDeDatos:
             WHERE username = ?
             """, (username,))
             return cursor.fetchone()
-<<<<<<< HEAD
-
-    
-
-
-            
-=======
     
     def obtener_id_usuario(self, username):
 
@@ -348,5 +321,4 @@ class BaseDeDatos:
             LIMIT 20
             """, (f'%{termino}%', usuario_id, usuario_id))
             return cursor.fetchall()
->>>>>>> d059e9bcf077a9a26bfd10513af49c421b2dcf0d
 
