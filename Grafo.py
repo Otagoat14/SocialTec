@@ -1,3 +1,6 @@
+import networkx as nx
+import matplotlib.pyplot as plt
+
 class Grafo:
     def __init__(self):
         self.grafo = {}
@@ -51,6 +54,17 @@ class Grafo:
         else:
             self.grafo[origen].remove(destino)
             self.grafo[destino].remove(origen)
+
+    def imprimir_grafo(self):
+        G = nx.Graph()
+
+        for usuario, amigos in self.grafo.items():
+            for amigo in amigos:
+                G.add_edge(usuario, amigo)
+
+        nx.draw(G, with_labels=True)
+        plt.show()
+
         
 
 grafo = Grafo()
@@ -71,6 +85,7 @@ grafo.apuntar("Daniel", "Carlos")
 
 print(grafo.grafo)
 
+grafo.imprimir_grafo()
 grafo.buscar_usuario("Juan")
 
 #grafo.obtener_amigos("Juan")

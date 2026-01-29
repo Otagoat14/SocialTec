@@ -42,7 +42,7 @@ def merge_sort(lista):
 
     return lista
 
-lista_prueba = [1, 5, 8, 4, 0, 9, 3, 4, 8, 10, 13, 54, 67, 43]
+lista_prueba = ["Daniel", "Carlos", "Ricardo"]
 print(merge_sort(lista_prueba))
 
 
