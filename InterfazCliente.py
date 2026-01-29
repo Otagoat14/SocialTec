@@ -689,7 +689,7 @@ class SocialtecCliente:
 
 
     def mostrar_resultado_busqueda(self, resultado):
-    
+
         frame_resultado = tk.Frame(
             self.frame_lista_resultados,
             bg=self.colores['fondo'],
@@ -697,16 +697,15 @@ class SocialtecCliente:
             borderwidth=1
         )
         frame_resultado.pack(fill='x', padx=5, pady=5)
-        
-    
+
         tk.Label(
             frame_resultado,
             text=resultado['nombre'],
             font=('Arial', 14),
             bg=self.colores['fondo']
         ).pack(side='left', padx=20, pady=15)
+
         
-    
         btn_ver = tk.Button(
             frame_resultado,
             text="Ver Perfil",
@@ -717,7 +716,7 @@ class SocialtecCliente:
             command=lambda: self.click_ver_perfil_busqueda(resultado)
         )
         btn_ver.pack(side='right', padx=5, pady=5)
-        
+
     
         if resultado['es_amigo']:
             btn_eliminar = tk.Button(
@@ -730,8 +729,7 @@ class SocialtecCliente:
                 command=lambda: self.click_eliminar_amistad(resultado)
             )
             btn_eliminar.pack(side='right', padx=5, pady=5)
-            
-    
+
             tk.Label(
                 frame_resultado,
                 text="Amigo",
@@ -739,6 +737,20 @@ class SocialtecCliente:
                 bg=self.colores['fondo'],
                 fg=self.colores['secundario']
             ).pack(side='right', padx=10)
+
+        
+        else:
+            btn_agregar = tk.Button(
+                frame_resultado,
+                text="Agregar Amigo",
+                font=('Arial', 10),
+                bg=self.colores['secundario'],
+                fg=self.colores['blanco'],
+                cursor='hand2',
+                command=lambda: self.click_agregar_amistad(resultado)
+            )
+            btn_agregar.pack(side='right', padx=5, pady=5)
+
     
 
     def click_ver_perfil_busqueda(self, resultado):
@@ -755,6 +767,15 @@ class SocialtecCliente:
         if respuesta:
             messagebox.showinfo("Éxito", f"Amistad con {resultado['nombre']} eliminada")
             self.click_buscar_persona()  
+
+    def click_agregar_amistad(self, resultado):
+        respuesta = messagebox.askyesno(
+            "Confirmar",
+            f"¿Desea enviar solicitud de amistad a {resultado['nombre']}?"
+        )
+
+        if respuesta:
+            messagebox.showinfo("Solicitud enviada", f"Solicitud enviada a {resultado['nombre']}")
 
 
 
