@@ -1,6 +1,6 @@
 def enrutador(mensaje):
     if mensaje == "login":
-        return "Hola login"
+        print("Hola Login jejejejej")
     #Retorno el metodo encargado del login
 
     if mensaje == "grafo":

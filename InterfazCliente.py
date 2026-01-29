@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox, filedialog
 from PIL import Image, ImageTk
 import os
 from Registro import ManejoUsuarios
+from Cliente_Prueba import *
 
 #CREO QUE HAY UN PROBLEMA CON LA LOGICA YA QUE EL SERVIDOR DEBERIA HACER TODAS LAS OPERACIONES HABRIA QUE HACERLAS EN EL SERVIDOR
 class SocialtecCliente:
@@ -130,6 +131,12 @@ class SocialtecCliente:
 
         #ESTO TAMBIEN HAY QUE CAMBIARLO CON LA LOGICA DEL SERVIDOR
         
+        """cliente = ClienteTCP()
+        cliente.conectar("127.0.0.1", 5000)
+        cliente.enviar(usuario)
+        cliente.enviar(contra)
+        cliente.enviar("login")"""
+
 
         exito, user_id, nombre, foto = self.registro.login(usuario, contra)
     

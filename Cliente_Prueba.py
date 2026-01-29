@@ -1,19 +1,26 @@
 import socket
 
-HOST = "127.0.0.1"
-PORT = 5000
+puerto = 5000
+ip = "127.0.0.1"
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as cliente:
-    cliente.connect((HOST, PORT))
-    print("Conectado al servidor")
+class ClienteTCP:
+    def __init__(self):
+        self.cliente = None
 
-    cliente.sendall("Hola servidor\n".encode("utf-8"))
-    print("Mensaje 1 enviado")
+    def conectar(self, ip, puerto):
+        self.cliente = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.cliente.connect((ip, puerto))
+        print("Conectado al servidor")
 
-    cliente.sendall("Este es el segundo mensaje\n".encode("utf-8"))
-    print("Mensaje 2 enviado")
+    def enviar(self, mensaje):
+        datos = (mensaje + "\n").encode("utf-8") 
+        self.cliente.sendall(datos)
+        print("Mensaje enviado:", mensaje)
 
-    respuesta = cliente.recv(1024).decode()
-    print("Respuesta del servidor:", respuesta)
+    def recibir(self):
+        buffer = self.cliente.recv(1024)
+        return buffer.decode("utf-8")
 
-print("Conexión cerrada")
+    def cerrar(self):
+        self.cliente.close()
+        print("Conexión cerrada")

@@ -1,6 +1,6 @@
 import socket
 import threading
-from Enrutador import enrutador
+from Registro import ManejoUsuarios
 
 IP = "127.0.0.1"
 PUERTO = 5000
@@ -20,12 +20,17 @@ def manejar_cliente(cliente, addr):
 
     mensaje1 = mensajes[0]
     mensaje2 = mensajes[1]
+    mensaje3 = mensajes[2]
+    
+    if mensaje3 == "login":
+        cliente_login = ManejoUsuarios()
+        respuesta = cliente_login.login(mensaje1, mensaje2)
+        cliente.sendall(respuesta.encode())
 
-    respuesta = enrutador("login")
-    cliente.sendall(respuesta.encode())
 
     cliente.close()
     print("Cliente atendido")
+
 
 
 
