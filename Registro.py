@@ -37,7 +37,7 @@ class ManejoUsuarios:
         nombre = self.encriptador.desencriptar(nombre_enc)
 
         print("usuario logueado")
-        return True, nombre, foto
+        return True
 
 # manejo_usuarios = ManejoUsuarios()
 
