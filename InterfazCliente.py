@@ -380,7 +380,7 @@ class SocialtecCliente:
         # Botón para ver solicitudes
         btn_solicitudes = tk.Button(
             frame_top,
-            text="📬 Solicitudes",
+            text="Solicitudes",
             font=('Arial', 11),
             bg=self.colores['blanco'],
             fg=self.colores['texto'],
@@ -391,7 +391,7 @@ class SocialtecCliente:
         
         btn_buscar = tk.Button(
             frame_top,
-            text="🔍 Buscar Amigos",
+            text="Buscar Amigos",
             font=('Arial', 11),
             bg=self.colores['blanco'],
             fg=self.colores['texto'],
@@ -470,12 +470,10 @@ class SocialtecCliente:
         canvas_amigos.pack(side="left", fill="both", expand=True)
         scrollbar_amigos.pack(side="right", fill="y")
         
-        # Cargar amigos desde el servidor
         self.cargar_amigos()
 
 
     def cargar_amigos(self):
-        """Carga la lista de amigos desde el servidor"""
         try:
             cliente = ClienteTCP()
             cliente.conectar(IP, PUERTO)
@@ -490,14 +488,11 @@ class SocialtecCliente:
                 datos = respuesta.split("|", 1)[1]
                 amigos = json.loads(datos)
                 
-                # Ordenar amigos alfabéticamente por username
                 amigos_ordenados = sorted(amigos, key=lambda x: x['username'].lower())
                 
-                # Limpiar lista anterior
                 for widget in self.frame_lista_amigos.winfo_children():
                     widget.destroy()
                 
-                # Mostrar amigos
                 if amigos_ordenados:
                     for amigo in amigos_ordenados:
                         self.mostrar_amigo_en_lista(amigo)
@@ -515,7 +510,6 @@ class SocialtecCliente:
 
 
     def mostrar_amigo_en_lista(self, amigo):
-        """Muestra un amigo en la lista"""
         frame_amigo = tk.Frame(
             self.frame_lista_amigos,
             bg=self.colores['fondo'],
@@ -544,7 +538,6 @@ class SocialtecCliente:
 
     
     def ver_perfil_amigo(self, username):
-        """Muestra el perfil de un amigo"""
         try:
             cliente = ClienteTCP()
             cliente.conectar(IP, PUERTO)
@@ -559,7 +552,6 @@ class SocialtecCliente:
                 datos = respuesta.split("|", 1)[1]
                 perfil = json.loads(datos)
                 
-                # Crear ventana de perfil
                 ventana_perfil = tk.Toplevel(self.root)
                 ventana_perfil.title(f"Perfil de {perfil['username']}")
                 ventana_perfil.geometry("400x300")
@@ -579,7 +571,6 @@ class SocialtecCliente:
                     bg=self.colores['fondo']
                 ).pack(pady=10)
                 
-                # Botón para eliminar amistad
                 btn_eliminar = tk.Button(
                     ventana_perfil,
                     text="Eliminar Amistad",
@@ -596,7 +587,6 @@ class SocialtecCliente:
 
 
     def eliminar_amistad_desde_perfil(self, username_amigo, ventana):
-        """Elimina una amistad"""
         respuesta_conf = messagebox.askyesno(
             "Confirmar",
             f"¿Está seguro que desea eliminar la amistad con {username_amigo}?"
@@ -618,7 +608,7 @@ class SocialtecCliente:
             if respuesta and respuesta.startswith("ELIMINAR_OK"):
                 messagebox.showinfo("Éxito", "Amistad eliminada")
                 ventana.destroy()
-                self.mostrar_perfil()  # Recargar perfil
+                self.mostrar_perfil()  
             else:
                 messagebox.showerror("Error", "No se pudo eliminar la amistad")
         
@@ -683,12 +673,10 @@ class SocialtecCliente:
         canvas_resultados.pack(side="left", fill="both", expand=True)
         scrollbar_resultados.pack(side="right", fill="y")
         
-        # Cargar solicitudes
         self.cargar_solicitudes()
 
 
     def cargar_solicitudes(self):
-        """Carga las solicitudes pendientes"""
         try:
             cliente = ClienteTCP()
             cliente.conectar(IP, PUERTO)
@@ -703,7 +691,6 @@ class SocialtecCliente:
                 datos = respuesta.split("|", 1)[1]
                 solicitudes = json.loads(datos)
                 
-                # Limpiar lista
                 for widget in self.frame_lista_solicitudes.winfo_children():
                     widget.destroy()
                 
@@ -724,7 +711,6 @@ class SocialtecCliente:
 
 
     def mostrar_solicitud(self, solicitud):
-        """Muestra una solicitud en la lista"""
         frame_solicitud = tk.Frame(
             self.frame_lista_solicitudes,
             bg=self.colores['fondo'],
@@ -764,7 +750,6 @@ class SocialtecCliente:
 
 
     def aceptar_solicitud(self, solicitud_id, username_remitente):
-        """Acepta una solicitud de amistad"""
         try:
             cliente = ClienteTCP()
             cliente.conectar(IP, PUERTO)
@@ -786,7 +771,6 @@ class SocialtecCliente:
 
 
     def rechazar_solicitud(self, solicitud_id):
-        """Rechaza una solicitud de amistad"""
         try:
             cliente = ClienteTCP()
             cliente.conectar(IP, PUERTO)
@@ -824,7 +808,7 @@ class SocialtecCliente:
         
         btn_volver = tk.Button(
             frame_top,
-            text="← Volver al Perfil",
+            text="Volver al Perfil",
             font=('Arial', 11),
             bg=self.colores['blanco'],
             fg=self.colores['texto'],
@@ -864,7 +848,7 @@ class SocialtecCliente:
         
         btn_buscar = tk.Button(
             frame_busqueda,
-            text="🔍 Buscar",
+            text="Buscar",
             font=('Arial', 12, 'bold'),
             bg=self.colores['primario'],
             fg=self.colores['blanco'],
@@ -903,7 +887,6 @@ class SocialtecCliente:
 
     
     def click_buscar_persona(self):
-        """Busca personas en la base de datos"""
         termino = self.entry_buscar_usuario.get()
         
         if not termino:
@@ -924,7 +907,6 @@ class SocialtecCliente:
                 datos = respuesta.split("|", 1)[1]
                 resultados = json.loads(datos)
                 
-                # Limpiar resultados anteriores
                 for widget in self.frame_lista_resultados.winfo_children():
                     widget.destroy()
                 
@@ -945,7 +927,6 @@ class SocialtecCliente:
 
 
     def mostrar_resultado_busqueda(self, resultado):
-        """Muestra un resultado de búsqueda"""
         frame_resultado = tk.Frame(
             self.frame_lista_resultados,
             bg=self.colores['fondo'],
@@ -972,7 +953,6 @@ class SocialtecCliente:
         )
         btn_ver.pack(side='right', padx=5, pady=5)
 
-        # Si es amigo, mostrar botón de eliminar
         if resultado['es_amigo']:
             btn_eliminar = tk.Button(
                 frame_resultado,
@@ -987,13 +967,12 @@ class SocialtecCliente:
 
             tk.Label(
                 frame_resultado,
-                text="✓ Amigo",
+                text="Amigo",
                 font=('Arial', 10),
                 bg=self.colores['fondo'],
                 fg=self.colores['secundario']
             ).pack(side='right', padx=10)
 
-        # Si no es amigo, mostrar botón de agregar
         else:
             btn_agregar = tk.Button(
                 frame_resultado,
@@ -1008,7 +987,6 @@ class SocialtecCliente:
 
 
     def click_eliminar_amistad(self, resultado):
-        """Elimina una amistad"""
         respuesta = messagebox.askyesno(
             "Confirmar",
             f"¿Está seguro que desea eliminar la amistad con {resultado['username']}?"
@@ -1029,7 +1007,7 @@ class SocialtecCliente:
             
             if respuesta_srv and respuesta_srv.startswith("ELIMINAR_OK"):
                 messagebox.showinfo("Éxito", f"Amistad con {resultado['username']} eliminada")
-                self.click_buscar_persona()  # Recargar búsqueda
+                self.click_buscar_persona() 
             else:
                 messagebox.showerror("Error", "No se pudo eliminar la amistad")
         
@@ -1038,7 +1016,6 @@ class SocialtecCliente:
 
 
     def click_agregar_amistad(self, resultado):
-        """Envía solicitud de amistad"""
         respuesta = messagebox.askyesno(
             "Confirmar",
             f"¿Desea enviar solicitud de amistad a {resultado['username']}?"
@@ -1059,7 +1036,7 @@ class SocialtecCliente:
             
             if respuesta_srv and respuesta_srv.startswith("SOLICITUD_OK"):
                 messagebox.showinfo("Éxito", f"Solicitud enviada a {resultado['username']}")
-                self.click_buscar_persona()  # Recargar búsqueda
+                self.click_buscar_persona()  
             else:
                 messagebox.showerror("Error", "No se pudo enviar la solicitud")
         
