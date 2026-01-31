@@ -26,7 +26,6 @@ def manejar_cliente(cliente, addr):
     print(f"[CONEXION] Cliente conectado desde {addr}")
     
     try:
-        # Recibir datos del cliente
         buffer = ""
         while True:
             data = cliente.recv(1024).decode()
@@ -324,7 +323,6 @@ def manejar_cliente(cliente, addr):
         print(f"[DESCONEXION] Cliente {addr} desconectado")
 
 
-# Inicializar el servidor
 if __name__ == "__main__":
     print("="*60)
     print("        SERVIDOR SOCIALTEC - INICIANDO")
