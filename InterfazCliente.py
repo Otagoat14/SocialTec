@@ -274,7 +274,7 @@ class SocialtecCliente:
             frame_foto,
             text="Seleccionar",
             font=('Arial', 10),
-            bg=self.colores['primario'],
+            bg=self.colores['gris'],
             fg=self.colores['blanco'],
             cursor='hand2',
             command=self.seleccionar_foto
@@ -303,9 +303,10 @@ class SocialtecCliente:
             fg=self.colores['blanco'],
             width=30,
             cursor='hand2',
+            relief=tk.FLAT,
             command=self.mostrar_login
         )
-        btn_cancelar.pack(side='left', padx=5)
+        btn_volver.pack()
 
 
     def seleccionar_foto(self):
@@ -324,14 +325,14 @@ class SocialtecCliente:
     def click_registrarse(self):
         nombre = self.entry_nombre_completo.get()
         usuario = self.entry_usuario_nuevo.get()
-        contra = self.entry_password_nuevo.get()
-        contra_confirmacion = self.entry_password_confirm.get()
+        password = self.entry_password_nuevo.get()
+        password_confirm = self.entry_password_confirm.get()
         
         if not nombre or not usuario or not password:
             messagebox.showwarning("Advertencia", "Por favor complete los campos obligatorios")
             return
         
-        if contra != contra_confirmacion:
+        if password != password_confirm:
             messagebox.showerror("Error", "Las contraseñas no coinciden")
             return
         
@@ -365,10 +366,8 @@ class SocialtecCliente:
     def mostrar_perfil(self):
         self.limpiar_ventana()
         
-        
         frame_top = tk.Frame(self.root, bg=self.colores['primario'], height=60)
         frame_top.pack(fill='x')
-
         
         tk.Label(
             frame_top,
@@ -849,7 +848,7 @@ class SocialtecCliente:
         
         tk.Label(
             frame_busqueda,
-            text="Nombre:",
+            text="Usuario:",
             font=('Arial', 12),
             bg=self.colores['blanco']
         ).pack(side='left', padx=(0, 10))
@@ -857,7 +856,7 @@ class SocialtecCliente:
         self.entry_buscar_usuario = tk.Entry(
             frame_busqueda,
             font=('Arial', 12),
-            width=20,
+            width=30,
             relief=tk.SOLID,
             borderwidth=1
         )
@@ -1008,15 +1007,11 @@ class SocialtecCliente:
             btn_agregar.pack(side='right', padx=5, pady=5)
 
 
-    def click_ver_perfil_busqueda(self, resultado):
-        messagebox.showinfo("Ver Perfil", f"Mostrando perfil de {resultado['nombre']}")
-    
-
     def click_eliminar_amistad(self, resultado):
         """Elimina una amistad"""
         respuesta = messagebox.askyesno(
             "Confirmar",
-            f"¿Está seguro que desea eliminar la amistad con {resultado['nombre']}?"
+            f"¿Está seguro que desea eliminar la amistad con {resultado['username']}?"
         )
         
         if not respuesta:
@@ -1046,7 +1041,7 @@ class SocialtecCliente:
         """Envía solicitud de amistad"""
         respuesta = messagebox.askyesno(
             "Confirmar",
-            f"¿Desea enviar solicitud de amistad a {resultado['nombre']}?"
+            f"¿Desea enviar solicitud de amistad a {resultado['username']}?"
         )
 
         if not respuesta:

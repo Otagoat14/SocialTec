@@ -4,6 +4,7 @@ from Registro import ManejoUsuarios
 from Base_de_datos import BaseDeDatos
 from Grafo import Grafo
 from Encriptacion import Encriptador
+import json
 
 IP = "127.0.0.1"
 PUERTO = 5001  
